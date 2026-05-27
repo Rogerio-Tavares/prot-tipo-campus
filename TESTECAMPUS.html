@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa do Campus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f1ec;
+      --surface: #ffffff;
+      --surface2: #ede9e2;
+      --border: rgba(0,0,0,0.10);
+      --border-md: rgba(0,0,0,0.18);
+      --text: #1a1814;
+      --text-muted: #6b6760;
+      --accent: #1a4f8a;
+      --accent-light: #e8eff8;
+      --green: #2e6b3e;
+      --green-light: #e6f2ea;
+      --amber: #8a5a0a;
+      --amber-light: #fdf0d8;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--accent);
+      padding: 2rem 1.5rem 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; left: 30%;
+      width: 140px; height: 140px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .header-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 6px;
+    }
+    header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 32px;
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    header p {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* SEARCH FLOATING CARD */
+    .search-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      margin: -1.5rem 1.25rem 0;
+      padding: 1rem;
+      position: relative;
+      z-index: 10;
+    }
+    .search-inner {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0 14px;
+      transition: border-color 0.2s;
+    }
+    .search-inner:focus-within { border-color: var(--accent); }
+    .search-inner svg { flex-shrink: 0; color: var(--text-muted); }
+    .search-inner input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      padding: 11px 0;
+      outline: none;
+    }
+    .search-inner input::placeholder { color: var(--text-muted); }
+
+    /* MAIN CONTENT */
+    main { padding: 1.5rem 1.25rem 6rem; }
+
+    /* FILTER CHIPS */
+    .filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 1.5rem;
+      scrollbar-width: none;
+    }
+    .filters::-webkit-scrollbar { display: none; }
+    .chip {
+      flex-shrink: 0;
+      padding: 7px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.18s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chip:hover { border-color: var(--border-md); color: var(--text); }
+    .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* SECTOR GRID */
+    .sectors-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+    @media (min-width: 480px) {
+      .sectors-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (min-width: 720px) {
+      .sectors-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .sector-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 1rem;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.18s, transform 0.12s, box-shadow 0.18s;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.3s both;
+    }
+    .sector-card:active { transform: scale(0.97); }
+    .sector-card:hover { box-shadow: var(--shadow-lg); }
+    .sector-card.active { border-color: var(--accent); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+    .card-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .card-type {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* EMPTY STATE */
+    .empty {
+      display: none;
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+    .empty.show { display: block; }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty p { font-size: 15px; }
+
+    /* BOTTOM SHEET */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      backdrop-filter: blur(2px);
+    }
+    .overlay.open { display: block; }
+
+    .sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      max-height: 88vh;
+      overflow-y: auto;
+      z-index: 101;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+      overscroll-behavior: contain;
+    }
+    .sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 40px; height: 4px;
+      background: var(--border-md);
+      border-radius: 99px;
+      margin: 12px auto 0;
+    }
+
+    .sheet-header {
+      padding: 1rem 1.25rem 0.75rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sheet-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .sheet-title-wrap { flex: 1; }
+    .sheet-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); line-height: 1.2; }
+    .sheet-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+    .sheet-close {
+      background: var(--bg);
+      border: none;
+      cursor: pointer;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .sheet-body { padding: 1.25rem; }
+
+    .info-block {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .info-block-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+    .info-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-row .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .info-row .label { color: var(--text-muted); margin-right: 4px; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .tag {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    /* MAP AREA */
+    .map-block {
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1rem;
+      border: 1.5px solid var(--border);
+    }
+    .map-placeholder {
+      background: var(--bg);
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 2rem;
+      text-align: center;
+    }
+    .map-placeholder .map-icon { font-size: 36px; }
+    .map-placeholder p { font-size: 14px; color: var(--text-muted); }
+    .map-placeholder small { font-size: 12px; color: var(--text-muted); opacity: 0.65; }
+    /* Para usar imagem real: substitua o .map-placeholder por um <img src="mapa.jpg" style="width:100%;display:block;"> */
+
+    /* ROUTE */
+    .route-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .route-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .step-line {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .step-connector {
+      width: 24px;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .step-connector::after {
+      content: '';
+      width: 2px;
+      height: 12px;
+      background: var(--border-md);
+      border-radius: 1px;
+    }
+    .step-text { font-size: 14px; color: var(--text); line-height: 1.5; padding-top: 3px; }
+
+    /* DESCRIPTION */
+    .desc { font-size: 15px; color: var(--text-muted); line-height: 1.65; margin-bottom: 1rem; }
+
+    /* FOOTER */
+    footer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 0.6rem 1.25rem;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-label">📍 Guia de Navegação</div>
+    <h1>Mapa da<br>UESB</h1>
+    <p>Toque em um setor para ver informações e como chegar</p>
+  </header>
+
+  <main>
+    <div class="section-title" id="sectionTitle">Todos os setores</div>
+    <div class="sectors-grid" id="sectorsGrid"></div>
+    <div class="empty" id="emptyMsg">
+      <div class="empty-icon">🔍</div>
+      <p>Nenhum setor encontrado.</p>
+    </div>
+  </main>
+
+  <footer>Campus · Guia de Setores</footer>
+
+  <!-- OVERLAY + BOTTOM SHEET -->
+  <div class="overlay" id="overlay" onclick="closeSheet()"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-icon" id="sheetIcon"></div>
+      <div class="sheet-title-wrap">
+        <div class="sheet-title" id="sheetTitle"></div>
+        <div class="sheet-subtitle" id="sheetSubtitle"></div>
+      </div>
+      <button class="sheet-close" onclick="closeSheet()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+
+  <script>
+    const sectors = [
+      {
+        id: 1, name: "Biblioteca", type: "academico", typeLabel: "Acadêmico",
+        emoji: "📚", bg: "#e8eff8", color: "#1a4f8a",
+        desc: "Acervo com mais de 20 mil títulos, periódicos digitais, salas de estudo individuais e em grupo e espaço de leitura tranquila.",
+        horario: "Seg–Sex: 7h–22h | Sáb: 8h–14h",
+        responsavel: "Coordenação de Acervo",
+        bloco: "Bloco B, Térreo",
+        servicos: ["Empréstimo", "Pesquisa digital", "Salas de estudo", "Impressão"],
+        rota: ["Entre pela portaria principal", "Siga em frente pela alameda central", "Vire à esquerda no Bloco B", "A biblioteca está no térreo à direita"]
+      },
+      {
+        id: 2, name: "Lab. de Informática", type: "academico", typeLabel: "Acadêmico",
+        emoji: "💻", bg: "#e8eff8", color: "#1a4f8a",
+        desc: "60 computadores com acesso à internet, softwares de engenharia, design e programação. Disponível para aulas e uso livre.",
+        horario: "Seg–Sex: 7h–21h",
+        responsavel: "Depto. de TI",
+        bloco: "Bloco C, 1º Andar",
+        servicos: ["Computadores", "Softwares licenciados", "Impressão", "Suporte técnico"],
+        rota: ["Entre pela portaria principal", "Siga pela alameda central e vire à direita", "Acesse o Bloco C", "Suba para o 1º andar, sala 101"]
+      },
+      {
+        id: 3, name: "Salas de Aula", type: "academico", typeLabel: "Acadêmico",
+        emoji: "🏫", bg: "#e8eff8", color: "#1a4f8a",
+        desc: "24 salas climatizadas com capacidade de 30 a 60 alunos, equipadas com projetor, quadro branco e sistema de som.",
+        horario: "Conforme grade curricular",
+        responsavel: "Coordenação Acadêmica",
+        bloco: "Blocos A, D e E",
+        servicos: ["Projetores", "Wi-Fi", "Ar-condicionado", "Acessibilidade"],
+        rota: ["Consulte sua grade para identificar o bloco", "Blocos A e D ficam ao lado da portaria principal", "Bloco E fica ao fundo do campus, à esquerda"]
+      },
+      {
+        id: 4, name: "Secretaria Acadêmica", type: "administrativo", typeLabel: "Administrativo",
+        emoji: "📋", bg: "#e6f2ea", color: "#2e6b3e",
+        desc: "Responsável por matrículas, histórico escolar, requerimentos, diplomas e demais documentos acadêmicos.",
+        horario: "Seg–Sex: 8h–18h",
+        responsavel: "Secretaria Geral",
+        bloco: "Bloco A, Térreo",
+        servicos: ["Matrícula", "Histórico", "Requerimentos", "Diplomas", "Atestados"],
+        rota: ["Entre pela portaria principal", "O Bloco A está logo à esquerda", "A secretaria é a primeira sala no térreo"]
+      },
+      {
+        id: 5, name: "Recursos Humanos", type: "administrativo", typeLabel: "Administrativo",
+        emoji: "👥", bg: "#e6f2ea", color: "#2e6b3e",
+        desc: "Atendimento a servidores e colaboradores para questões trabalhistas, benefícios, férias e documentação funcional.",
+        horario: "Seg–Sex: 8h–17h",
+        responsavel: "Gerência de RH",
+        bloco: "Bloco Administrativo, 2º Andar",
+        servicos: ["Contracheque", "Férias", "Benefícios", "Documentos"],
+        rota: ["Pela portaria principal, siga à direita", "Acesse o Bloco Administrativo (placa indicativa)", "Suba para o 2º andar, sala 205"]
+      },
+      {
+        id: 6, name: "Setor Financeiro", type: "administrativo", typeLabel: "Administrativo",
+        emoji: "💰", bg: "#e6f2ea", color: "#2e6b3e",
+        desc: "Responsável por boletos, pagamentos, bolsas e demais questões financeiras de alunos e fornecedores.",
+        horario: "Seg–Sex: 9h–16h",
+        responsavel: "Gerência Financeira",
+        bloco: "Bloco Administrativo, 1º Andar",
+        servicos: ["Boletos", "Bolsas", "Financiamentos", "NF-e"],
+        rota: ["Pela portaria principal, siga à direita", "Acesse o Bloco Administrativo", "No 1º andar, sala 110"]
+      },
+      {
+        id: 7, name: "Restaurante Universitário", type: "servicos", typeLabel: "Serviços",
+        emoji: "🍽️", bg: "#fdf0d8", color: "#8a5a0a",
+        desc: "Refeitório com capacidade para 300 pessoas, servindo café da manhã, almoço e jantar com cardápio variado e opções vegetarianas.",
+        horario: "Seg–Sex: 7h–20h | Sáb: 8h–14h",
+        responsavel: "Gestão de Alimentação",
+        bloco: "Área Central do Campus",
+        servicos: ["Café da manhã", "Almoço", "Jantar", "Vegetariano"],
+        rota: ["Da portaria principal, siga a alameda central até o fim", "O restaurante está na área central", "Identificado com placa laranja"]
+      },
+      {
+        id: 8, name: "Estacionamento", type: "servicos", typeLabel: "Serviços",
+        emoji: "🅿️", bg: "#fdf0d8", color: "#8a5a0a",
+        desc: "Estacionamento coberto com 200 vagas para carros e 80 para motos. Acesso mediante cadastro prévio ou pagamento na cancela.",
+        horario: "24 horas",
+        responsavel: "Portaria e Segurança",
+        bloco: "Entrada Lateral (Rua B)",
+        servicos: ["Carros", "Motos", "Acesso 24h", "Câmeras"],
+        rota: ["Não entre pela portaria principal", "Acesse pela Rua B — entrada lateral, à direita do campus", "A cancela de acesso fica logo na entrada"]
+      },
+      {
+        id: 9, name: "Quadras Esportivas", type: "servicos", typeLabel: "Serviços",
+        emoji: "🏀", bg: "#fdf0d8", color: "#8a5a0a",
+        desc: "Duas quadras poliesportivas cobertas e uma quadra de areia para vôlei. Agendamento disponível pelo portal do aluno.",
+        horario: "Seg–Sáb: 7h–21h",
+        responsavel: "Coord. de Esportes",
+        bloco: "Área Esportiva (fundo do campus)",
+        servicos: ["Basquete", "Vôlei", "Futsal", "Agendamento"],
+        rota: ["Da portaria principal, siga toda a alameda central", "Ao fundo do campus, vire à esquerda", "As quadras ficam no fim do caminho, à direita"]
+      }
+    ];
+
+    const LABELS = {
+      todos: 'Todos os setores',
+      academico: 'Setores Acadêmicos',
+      administrativo: 'Setores Administrativos',
+      servicos: 'Serviços'
+    };
+
+    let currentFilter = 'todos';
+    let currentSearch = '';
+    let openId = null;
+
+    function setFilter(f, btn) {
+      currentFilter = f;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('sectionTitle').textContent = LABELS[f];
+      render();
+    }
+
+    function filterSectors() {
+      currentSearch = document.getElementById('searchInput').value.toLowerCase();
+      render();
+    }
+
+    function getFiltered() {
+      return sectors.filter(s => {
+        const matchType = currentFilter === 'todos' || s.type === currentFilter;
+        const matchSearch = !currentSearch || s.name.toLowerCase().includes(currentSearch) || s.typeLabel.toLowerCase().includes(currentSearch);
+        return matchType && matchSearch;
+      });
+    }
+
+    function render() {
+      const grid = document.getElementById('sectorsGrid');
+      const empty = document.getElementById('emptyMsg');
+      const filtered = getFiltered();
+      grid.innerHTML = '';
+      if (!filtered.length) { empty.classList.add('show'); return; }
+      empty.classList.remove('show');
+      filtered.forEach((s, i) => {
+        const card = document.createElement('div');
+        card.className = 'sector-card' + (openId === s.id ? ' active' : '');
+        card.style.animationDelay = (i * 0.04) + 's';
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', 'Ver detalhes de ' + s.name);
+        card.innerHTML = `
+          <div class="card-icon" style="background:${s.bg};">${s.emoji}</div>
+          <div class="card-name">${s.name}</div>
+          <div class="card-type">${s.typeLabel}</div>
+        `;
+        card.onclick = () => openDetail(s);
+        card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') openDetail(s); };
+        grid.appendChild(card);
+      });
+    }
+
+    function openDetail(s) {
+      openId = s.id;
+      render();
+
+      document.getElementById('sheetIcon').innerHTML = s.emoji;
+      document.getElementById('sheetIcon').style.background = s.bg;
+      document.getElementById('sheetIcon').style.fontSize = '26px';
+      document.getElementById('sheetTitle').textContent = s.name;
+      document.getElementById('sheetSubtitle').textContent = s.typeLabel + ' · ' + s.bloco;
+
+      const stepsHTML = s.rota.map((r, i) => {
+        const connector = i < s.rota.length - 1
+          ? `<div class="step-connector"></div>`
+          : '';
+        return `
+          <div class="route-step">
+            <div>
+              <div class="step-num">${i+1}</div>
+              ${connector}
+            </div>
+            <div class="step-text">${r}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('sheetBody').innerHTML = `
+        <p class="desc">${s.desc}</p>
+
+        <div class="info-block">
+          <div class="info-block-title">Informações</div>
+          <div class="info-row"><span class="icon">🕐</span><div><span class="label">Horário:</span>${s.horario}</div></div>
+          <div class="info-row"><span class="icon">👤</span><div><span class="label">Responsável:</span>${s.responsavel}</div></div>
+          <div class="info-row"><span class="icon">📍</span><div><span class="label">Localização:</span>${s.bloco}</div></div>
+        </div>
+
+        <div class="info-block">
+          <div class="info-block-title">Serviços disponíveis</div>
+          <div class="tags">
+            ${s.servicos.map(sv => `<span class="tag">${sv}</span>`).join('')}
+          </div>
+        </div>
+
+        <div class="map-block">
+          <div class="map-placeholder">
+            <span class="map-icon">🗺️</span>
+            <p>Mapa do campus</p>
+            <small>Substitua por <code>&lt;img src="mapa.jpg"&gt;</code></small>
+          </div>
+        </div>
+
+        <div class="route-title">Como chegar</div>
+        ${stepsHTML}
+        <div style="height:1rem;"></div>
+      `;
+
+      document.getElementById('overlay').classList.add('open');
+      document.getElementById('sheet').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSheet() {
+      openId = null;
+      document.getElementById('overlay').classList.remove('open');
+      document.getElementById('sheet').classList.remove('open');
+      document.body.style.overflow = '';
+      render();
+    }
+
+    // Swipe down to close
+    let startY = 0;
+    const sheet = document.getElementById('sheet');
+    sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; });
+    sheet.addEventListener('touchend', e => {
+      if (e.changedTouches[0].clientY - startY > 80) closeSheet();
+    });
+
+    render();
+  </script>
+</body>
+</html>
