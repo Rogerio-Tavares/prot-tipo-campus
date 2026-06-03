@@ -1,77 +1,50 @@
 const sectors = [
   {
-    id: 1, name: "Biblioteca", type: "academico", typeLabel: "Acadêmico",
+    id: 1, name: "Biblioteca",
     emoji: "📚", bg: "#e8eff8", color: "#1a4f8a",
-    desc: "Acervo com mais de 20 mil títulos, periódicos digitais, salas de estudo individuais e em grupo e espaço de leitura tranquila.",
-    horario: "Seg–Sex: 7h–22h | Sáb: 8h–14h",
     mapsLink: "https://maps.app.goo.gl/MRhLXy6bJ3bVGxHe9?g_st=iw"
   },
   {
-    id: 2, name: "Lab. de Informática", type: "academico", typeLabel: "Acadêmico",
+    id: 2, name: "Lab. de Informática",
     emoji: "💻", bg: "#e8eff8", color: "#1a4f8a",
-    desc: "60 computadores com acesso à internet, softwares de engenharia, design e programação. Disponível para aulas e uso livre.",
-    horario: "Seg–Sex: 7h–21h",
     mapsLink: "https://maps.app.goo.gl/informatica"
   },
   {
-    id: 3, name: "Salas de Aula", type: "academico", typeLabel: "Acadêmico",
+    id: 3, name: "Salas de Aula",
     emoji: "🏫", bg: "#e8eff8", color: "#1a4f8a",
-    desc: "24 salas climatizadas com capacidade de 30 a 60 alunos, equipadas com projetor, quadro branco e sistema de som.",
-    horario: "Conforme grade curricular",
     mapsLink: "https://maps.app.goo.gl/salas",
   },
   {
-    id: 4, name: "Secretaria Acadêmica", type: "administrativo", typeLabel: "Administrativo",
+    id: 4, name: "Secretaria Acadêmica",
     emoji: "📋", bg: "#e6f2ea", color: "#2e6b3e",
-    desc: "Responsável por matrículas, histórico escolar, requerimentos, diplomas e demais documentos acadêmicos.",
-    horario: "Seg–Sex: 8h–18h",
     mapsLink: "https://maps.app.goo.gl/secretaria"
   },
   {
-    id: 5, name: "Recursos Humanos", type: "administrativo", typeLabel: "Administrativo",
+    id: 5, name: "Recursos Humanos",
     emoji: "👥", bg: "#e6f2ea", color: "#2e6b3e",
-    desc: "Atendimento a servidores e colaboradores para questões trabalhistas, benefícios, férias e documentação funcional.",
-    horario: "Seg–Sex: 8h–17h",
     mapsLink: "https://maps.app.goo.gl/rh"
   },
   {
-    id: 6, name: "Setor Financeiro", type: "administrativo", typeLabel: "Administrativo",
+    id: 6, name: "Setor Financeiro",
     emoji: "💰", bg: "#e6f2ea", color: "#2e6b3e",
-    desc: "Responsável por boletos, pagamentos, bolsas e demais questões financeiras de alunos e fornecedores.",
-    horario: "Seg–Sex: 9h–16h",
     mapsLink: "https://maps.app.goo.gl/financeiro"
   },
   {
-    id: 7, name: "Restaurante Universitário", type: "servicos", typeLabel: "Serviços",
+    id: 7, name: "Restaurante Universitário",
     emoji: "🍽️", bg: "#fdf0d8", color: "#8a5a0a",
-    desc: "Refeitório com capacidade para 300 pessoas, servindo café da manhã, almoço e jantar com cardápio variado e opções vegetarianas.",
-    horario: "Seg–Sex: 7h–20h | Sáb: 8h–14h",
     mapsLink: "https://maps.app.goo.gl/restaurante"
   },
   {
-    id: 8, name: "Estacionamento", type: "servicos", typeLabel: "Serviços",
+    id: 8, name: "Estacionamento",
     emoji: "🅿️", bg: "#fdf0d8", color: "#8a5a0a",
-    desc: "Estacionamento coberto com 200 vagas para carros e 80 para motos. Acesso mediante cadastro prévio ou pagamento na cancela.",
-    horario: "24 horas",
     mapsLink: "https://maps.app.goo.gl/estacionamento"
   },
   {
-    id: 9, name: "Quadras Esportivas", type: "servicos", typeLabel: "Serviços",
+    id: 9, name: "Quadras Esportivas",
     emoji: "🏀", bg: "#fdf0d8", color: "#8a5a0a",
-    desc: "Duas quadras poliesportivas cobertas e uma quadra de areia para vôlei. Agendamento disponível pelo portal do aluno.",
-    horario: "Seg–Sáb: 7h–21h",
     mapsLink: "https://maps.app.goo.gl/quadras"
   }
 ];
-
-// Filtro para determinar o setor.
- // *Ver como referenciar no projeto*
-const LABELS = {
-  todos: 'Todos os setores',
-  academico: 'Setores Acadêmicos',
-  administrativo: 'Setores Administrativos',
-  servicos: 'Serviços'
-};
 
 let currentFilter = 'todos';
 let currentSearch = '';
@@ -103,7 +76,7 @@ function render() {
     card.innerHTML = `
       <div class="card-icon" style="background:${s.bg};">${s.emoji}</div>
       <div class="card-name">${s.name}</div>
-      <div class="card-type">${s.typeLabel}</div>
+
     `;
     card.onclick = () => openDetail(s);
     card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') openDetail(s); };
@@ -119,18 +92,11 @@ function openDetail(s) {
   document.getElementById('sheetIcon').style.background = s.bg;
   document.getElementById('sheetIcon').style.fontSize = '26px';
   document.getElementById('sheetTitle').textContent = s.name;
-  document.getElementById('sheetSubtitle').textContent = s.typeLabel + ' · ' + s.bloco;
 
-  // Aqui o conetúdo do sheet é inserido.
+  // Aqui o conteúdo do sheet é inserido.
   // Também o mapa.
   document.getElementById('sheetBody').innerHTML = `
-    <p class="desc">${s.desc}</p>
-
-    <div class="info-block">
-      <div class="info-block-title">Informações</div>
-      <div class="info-row"><span class="icon">🕐</span><div><span class="label">Horário:</span>${s.horario}</div></div>
-    </div>
-
+    
     <div class="map-block">
       <a class="map-link" href="${s.mapsLink}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;display:block;">
         <div class="map-placeholder">
